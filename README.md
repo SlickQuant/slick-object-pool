@@ -5,6 +5,8 @@
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey.svg)](#platform-support)
 [![Header-only](https://img.shields.io/badge/header--only-yes-brightgreen.svg)](#installation)
 [![Lock-free](https://img.shields.io/badge/concurrency-lock--free-orange.svg)](#architecture)
+[![CI](https://github.com/SlickQuant/slick_object_pool/actions/workflows/ci.yml/badge.svg)](https://github.com/SlickQuant/slick_object_pool/actions/workflows/ci.yml)
+[![GitHub release](https://img.shields.io/github/v/release/SlickQuant/slick_object_pool)](https://github.com/SlickQuant/slick_object_pool/releases)
 
 A high-performance, lock-free object pool for C++20 with multi-threading support. Designed for real-time systems, game engines, high-frequency trading, and any application requiring predictable, low-latency object allocation.
 
@@ -15,7 +17,6 @@ A high-performance, lock-free object pool for C++20 with multi-threading support
   - [Features](#features)
     - [🚀 Performance](#-performance)
     - [🔧 Architecture](#-architecture)
-    - [🌐 Shared Memory](#-shared-memory)
     - [⚡ Use Cases](#-use-cases)
   - [Quick Start](#quick-start)
   - [Installation](#installation)
@@ -23,7 +24,6 @@ A high-performance, lock-free object pool for C++20 with multi-threading support
     - [CMake Integration](#cmake-integration)
   - [Usage Examples](#usage-examples)
     - [Basic Usage](#basic-usage)
-    - [Shared Memory (Inter-Process)](#shared-memory-inter-process)
     - [Multi-Threaded Usage](#multi-threaded-usage)
   - [Architecture](#architecture)
     - [Lock-Free MPMC Design](#lock-free-mpmc-design)
@@ -49,8 +49,6 @@ A high-performance, lock-free object pool for C++20 with multi-threading support
   - [Best Practices](#best-practices)
     - [Pool Size Selection](#pool-size-selection)
     - [Pool Exhaustion Handling](#pool-exhaustion-handling)
-    - [Shared Memory Lifecycle](#shared-memory-lifecycle)
-    - [Type Design for Shared Memory](#type-design-for-shared-memory)
   - [Limitations](#limitations)
   - [FAQ](#faq)
   - [Contributing](#contributing)
@@ -74,18 +72,11 @@ A high-performance, lock-free object pool for C++20 with multi-threading support
 - **Type-safe** - Static assertions ensure compatible types
 - **Cross-platform** - Windows, Linux, macOS, and Unix-like systems
 
-### 🌐 Shared Memory
-- **Inter-process communication** - Share pools across multiple processes
-- **Zero-copy** - Direct memory access without serialization
-- **Automatic synchronization** - Lock-free coordination between processes
-- **Lifecycle management** - Automatic cleanup on process termination
-
 ### ⚡ Use Cases
 - Real-time systems (robotics, industrial control)
 - Game engines (entity management, particle systems)
 - High-frequency trading systems
 - Network servers (connection pooling, buffer management)
-- Multi-process data pipelines
 - Any scenario requiring predictable allocation performance
 
 ## Quick Start
@@ -192,63 +183,6 @@ int main() {
 }
 ```
 
-### Shared Memory (Inter-Process)
-
-**Process 1: Create and populate shared pool**
-
-```cpp
-#include <slick/object_pool.h>
-
-struct SharedData {
-    int64_t timestamp;
-    double price;
-};
-
-int main() {
-    // Create shared memory pool (512 objects, power of 2)
-    slick::ObjectPool<SharedData> pool(512, "market_data_pool");
-
-    // Pool is automatically initialized and ready to use
-    for (int i = 0; i < 100; ++i) {
-        SharedData* data = pool.allocate_object();
-        data->timestamp = get_current_time();
-        data->price = get_market_price();
-
-        // Process data...
-
-        pool.free_object(data);
-    }
-
-    return 0;
-}
-```
-
-**Process 2: Attach to existing shared pool**
-
-```cpp
-#include <slick/object_pool.h>
-
-struct SharedData {
-    int64_t timestamp;
-    double price;
-};
-
-int main() {
-    // Attach to existing shared pool
-    slick::ObjectPool<SharedData> pool("market_data_pool");
-
-    // Use the shared pool
-    SharedData* data = pool.allocate_object();
-
-    // Process shared data...
-    std::cout << "Price: " << data->price << std::endl;
-
-    pool.free_object(data);
-
-    return 0;
-}
-```
-
 ### Multi-Threaded Usage
 
 ```cpp
@@ -276,7 +210,7 @@ void worker_thread(slick::ObjectPool<WorkItem>& pool, int thread_id) {
 }
 
 int main() {
-    // Create shared pool (must be power of 2)
+    // Create pool (must be power of 2)
     slick::ObjectPool<WorkItem> pool(2048);
 
     // Launch multiple producer/consumer threads
@@ -330,23 +264,12 @@ Cache Lines 2+ - Shared data:
 
 ### Memory Layout
 
-**Local Memory Mode:**
 ```
 ObjectPool instance
   ├─ Heap: buffer_[size_]       (actual objects)
   ├─ Heap: control_[size_]      (slot metadata)
   ├─ Heap: free_objects_[size_] (free list)
-  └─ Stack: reserved_, consumed_ (local atomics)
-```
-
-**Shared Memory Mode:**
-```
-Shared Memory Segment "pool_name"
-  ├─ [0-63]:    reserved_ + size_      (Producer cache line)
-  ├─ [64-127]:  consumed_              (Consumer cache line)
-  ├─ [128+]:    control_[size_]        (Slot metadata)
-  ├─ [N+]:      buffer_[size_]         (Object storage)
-  └─ [M+]:      free_objects_[size_]   (Free list)
+  └─ Stack: reserved_, consumed_ (atomics)
 ```
 
 ## Performance
@@ -365,13 +288,13 @@ Tested on: Intel Xeon E5-2680 v4 @ 2.4GHz, 256GB RAM, Linux 5.15
 
 ### Comparison with Alternatives
 
-| Implementation | Allocation Latency | Thread Safety | Shared Memory |
-|----------------|-------------------|---------------|---------------|
-| slick_object_pool | ~12-35 ns | Lock-free MPMC | ✅ Yes |
-| std::allocator | ~50-200 ns | Thread-local | ❌ No |
-| boost::pool | ~20-40 ns | Mutex-based | ❌ No |
-| tcmalloc | ~30-60 ns | Thread-local | ❌ No |
-| jemalloc | ~25-50 ns | Thread-local | ❌ No |
+| Implementation | Allocation Latency | Thread Safety |
+|----------------|-------------------|---------------|
+| slick_object_pool | ~12-35 ns | Lock-free |
+| std::allocator | ~50-200 ns | Thread-local |
+| boost::pool | ~20-40 ns | Mutex-based |
+| tcmalloc | ~30-60 ns | Thread-local |
+| jemalloc | ~25-50 ns | Thread-local |
 
 *Note: Benchmarks are system-dependent. Run your own tests for production use.*
 
@@ -381,19 +304,11 @@ Tested on: Intel Xeon E5-2680 v4 @ 2.4GHz, 256GB RAM, Linux 5.15
 
 ```cpp
 // Create pool in local memory
-ObjectPool(uint32_t size, const char* shm_name = nullptr);
-
-// Open existing shared memory pool
-ObjectPool(const char* shm_name);
+ObjectPool(uint32_t size);
 ```
 
 **Parameters:**
 - `size`: Number of objects in pool (must be power of 2)
-- `shm_name`: Name for shared memory segment (nullptr for local memory)
-
-**Throws:**
-- `std::runtime_error`: If shared memory allocation fails
-- `std::invalid_argument`: If size is not power of 2 (assertion in debug)
 
 ### Methods
 
@@ -410,9 +325,7 @@ void free_object(T* obj);
 Returns an object to the pool if it belongs to the pool, otherwise deletes it.
 
 ```cpp
-// Query methods
-bool own_buffer() const noexcept;    // Is this the pool owner?
-bool use_shm() const noexcept;       // Using shared memory?
+// Query method
 constexpr uint32_t size() const noexcept;  // Pool size
 ```
 
@@ -421,31 +334,29 @@ constexpr uint32_t size() const noexcept;  // Pool size
 Objects stored in the pool must satisfy:
 
 ```cpp
-static_assert(std::is_trivially_copyable_v<T>);
-static_assert(std::is_standard_layout_v<T>);
+static_assert(std::is_default_constructible_v<T>);
 ```
 
 **Valid types:**
 - POD types (int, float, etc.)
-- Structs with trivial copy/move
-- Arrays of valid types
+- std::string, std::vector, and other standard containers
+- Structs with default constructors
+- Classes with default constructors
 
 **Invalid types:**
-- Types with virtual functions
-- Types with user-defined copy constructors
-- Types containing pointers to process-local memory (for shared memory mode)
-- std::string, std::vector (contains pointers)
+- Types without default constructors
+- Types with deleted default constructors
 
 ## Platform Support
 
-| Platform | Status | API Used |
-|----------|--------|----------|
-| Windows (MSVC) | ✅ Tested | File Mapping API |
-| Windows (MinGW) | ✅ Tested | File Mapping API |
-| Linux | ✅ Tested | POSIX shm_open/mmap |
-| macOS | ✅ Tested | POSIX shm_open/mmap |
-| FreeBSD | ⚠️ Should work | POSIX shm_open/mmap |
-| Unix-like | ⚠️ Should work | POSIX shm_open/mmap |
+| Platform | Status |
+|----------|--------|
+| Windows (MSVC) | ✅ Tested |
+| Windows (MinGW) | ✅ Tested |
+| Linux | ✅ Tested |
+| macOS | ✅ Tested |
+| FreeBSD | ⚠️ Should work |
+| Unix-like | ⚠️ Should work |
 
 ## Requirements
 
@@ -545,7 +456,6 @@ sudo cmake --install .
 - ✅ **Multiple producers** can call `allocate_object()` concurrently
 - ✅ **Multiple consumers** can call `free_object()` concurrently
 - ✅ **Mixed operations** (allocate + free) are safe
-- ✅ **Shared memory** pools are safe across processes
 - ❌ **reset()** is NOT thread-safe (use when no other threads are active)
 
 ### Memory Ordering
@@ -584,59 +494,43 @@ T* obj = pool.allocate_object();  // May return heap-allocated object
 pool.free_object(obj);  // Works for pool or heap objects
 ```
 
-### Shared Memory Lifecycle
+### Type Design
 
 ```cpp
-// Process 1: Creates pool
-{
-    slick::ObjectPool<T> owner(1024, "my_pool");
-    // Pool exists in shared memory
-    // ...
-}  // Pool destroyed when owner exits
-
-// Process 2: Must handle pool disappearing
-try {
-    slick::ObjectPool<T> client("my_pool");
-    // Use pool...
-} catch (const std::runtime_error& e) {
-    // Pool doesn't exist or was deleted
-}
-```
-
-### Type Design for Shared Memory
-
-```cpp
-// ✅ Good: POD struct
-struct GoodType {
+// ✅ Good: Simple POD struct
+struct SimpleType {
     int id;
     double values[10];
     char name[32];
 };
 
-// ❌ Bad: Contains pointers
+// ✅ Good: Types with STL containers
+struct ComplexType {
+    int id;
+    std::string name;        // OK!
+    std::vector<double> v;   // OK!
+};
+
+// ❌ Bad: No default constructor
 struct BadType {
-    int id;
-    std::string name;      // Contains pointer!
-    std::vector<double> v; // Contains pointer!
+    BadType(int x) : value(x) {}  // No default constructor
+    int value;
 };
 
-// ✅ Workaround: Fixed-size arrays
+// ✅ Fix: Add default constructor
 struct FixedType {
-    int id;
-    char name[32];
-    double values[10];
-    size_t value_count;
+    FixedType() = default;        // Default constructor
+    FixedType(int x) : value(x) {}
+    int value = 0;
 };
 ```
 
 ## Limitations
 
 1. **Pool size must be power of 2** - Required for efficient bitwise indexing
-2. **Type must be trivially copyable** - Required for shared memory safety
+2. **Type must be default constructible** - Required for pool initialization
 3. **No automatic resize** - Pool size is fixed at construction
-4. **Shared memory persistence** - Pool persists until owner process exits or calls destructor
-5. **No memory reclamation** - Objects returned to pool are reused, not freed
-6. **Platform-specific shared memory** - Windows and POSIX implementations differ
+4. **No memory reclamation** - Objects returned to pool are reused, not freed
 
 ## FAQ
 
@@ -644,16 +538,7 @@ struct FixedType {
 A: `allocate_object()` automatically allocates from heap. `free_object()` detects and deletes heap-allocated objects.
 
 **Q: Can I use std::string or std::vector in pooled objects?**
-A: No, for shared memory mode. These types contain pointers to process-local memory. Use fixed-size arrays instead.
-
-**Q: How do I know if I'm using shared memory or local memory?**
-A: Call `pool.use_shm()` to check.
-
-**Q: Can multiple processes create the same shared pool?**
-A: Yes, the first process becomes the owner. Others attach to the existing pool.
-
-**Q: What happens if the owner process crashes?**
-A: On POSIX: Pool persists until explicitly unlinked. On Windows: Pool is automatically cleaned up.
+A: Yes! The pool works with any default constructible type, including std::string, std::vector, and other standard containers.
 
 **Q: Is the pool real-time safe?**
 A: Operations are lock-free but not wait-free. Allocation may fail and fall back to heap allocation.

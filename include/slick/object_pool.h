@@ -64,6 +64,10 @@ namespace slick {
  */
 template<typename T>
 class ObjectPool {
+    // Type safety check: T must be default constructible
+    static_assert(std::is_default_constructible_v<T>,
+        "T must be default constructible");
+
     /// Hardware cache line size (typically 64 bytes, auto-detected if available)
 #ifdef __cpp_lib_hardware_interference_size
     static constexpr size_t CACHE_LINE_SIZE = std::hardware_destructive_interference_size;
