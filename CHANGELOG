@@ -1,0 +1,51 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [0.1.0] - 2025-01-23
+
+### Added
+- Initial release of slick_object_pool
+- Lock-free multi-producer multi-consumer (MPMC) object pool implementation
+- Header-only library design for easy integration
+- C++20 compliant implementation
+- Cache-line aligned atomic operations to prevent false sharing
+- O(1) constant-time allocation and deallocation
+- Power-of-2 ring buffer with efficient bitwise indexing
+- Automatic heap fallback when pool is exhausted
+- Cross-platform support (Windows, Linux, macOS)
+- Comprehensive test suite with Google Test
+- CMake build system with FetchContent support
+- Support for AddressSanitizer, ThreadSanitizer, and UndefinedBehaviorSanitizer
+- Type safety with static assertions for trivially copyable types
+- Thread-safe operations for concurrent access
+- Detailed documentation and usage examples
+- MIT License
+
+### Features
+- `ObjectPool<T>` class template for type-safe object pooling
+- `allocate_object()` method for O(1) object allocation
+- `free_object()` method for O(1) object deallocation
+- `size()` method to query pool capacity
+- Namespace: `slick::ObjectPool<T>`
+- Include path: `<slick/object_pool.h>`
+
+### Documentation
+- Comprehensive README with architecture details
+- Usage examples for basic, multi-threaded scenarios
+- API reference documentation
+- Performance benchmarks and comparisons
+- Best practices and limitations guide
+- TESTING.md with detailed sanitizer instructions
+- DOCUMENTATION.md with implementation details
+
+### Platform Support
+- Windows (MSVC, MinGW)
+- Linux (GCC 10+, Clang 11+)
+- macOS (Clang 11+)
+- POSIX-compliant systems
+
+[0.1.0]: https://github.com/SlickQuant/slick_object_pool/releases/tag/v0.1.0
