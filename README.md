@@ -126,6 +126,7 @@ cp slick_object_pool/include/slick/object_pool.h your_project/include/
 ```cmake
 include(FetchContent)
 
+set(BUILD_SLICK_OBJECTPOOL_TESTS OFF CACHE BOOL "" FORCE)
 FetchContent_Declare(
     slick_object_pool
     GIT_REPOSITORY https://github.com/SlickQuant/slick_object_pool.git
