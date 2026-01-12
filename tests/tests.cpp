@@ -1,11 +1,11 @@
 /********************************************************************************
- * Copyright (c) 2025 SlickQuant
+ * Copyright (c) 2025-2026 SlickQuant
  * All rights reserved
  *
- * This file is part of the slick_object_pool. Redistribution and use in source and
+ * This file is part of the slick-object-pool. Redistribution and use in source and
  * binary forms, with or without modification, are permitted exclusively under
  * the terms of the MIT license which is available at
- * https://github.com/SlickQuant/slick_object_pool/blob/main/LICENSE
+ * https://github.com/SlickQuant/slick-object-pool/blob/main/LICENSE
  *
  ********************************************************************************/
 

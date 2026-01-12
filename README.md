@@ -1,18 +1,18 @@
-# slick_object_pool
+# slick-object-pool
 
 [![C++20](https://img.shields.io/badge/C%2B%2B-20-blue.svg)](https://en.cppreference.com/w/cpp/20)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey.svg)](#platform-support)
 [![Header-only](https://img.shields.io/badge/header--only-yes-brightgreen.svg)](#installation)
 [![Lock-free](https://img.shields.io/badge/concurrency-lock--free-orange.svg)](#architecture)
-[![CI](https://github.com/SlickQuant/slick_object_pool/actions/workflows/ci.yml/badge.svg)](https://github.com/SlickQuant/slick_object_pool/actions/workflows/ci.yml)
-[![GitHub release](https://img.shields.io/github/v/release/SlickQuant/slick_object_pool)](https://github.com/SlickQuant/slick_object_pool/releases)
+[![CI](https://github.com/SlickQuant/slick-object-pool/actions/workflows/ci.yml/badge.svg)](https://github.com/SlickQuant/slick-object-pool/actions/workflows/ci.yml)
+[![GitHub release](https://img.shields.io/github/v/release/SlickQuant/slick-object-pool)](https://github.com/SlickQuant/slick-object-pool/releases)
 
 A high-performance, lock-free object pool for C++20 with multi-threading support. Designed for real-time systems, game engines, high-frequency trading, and any application requiring predictable, low-latency object allocation.
 
 ## Table of Contents
 
-- [slick\_object\_pool](#slick_object_pool)
+- [slick-object-pool](#slick-object-pool)
   - [Table of Contents](#table-of-contents)
   - [Features](#features)
     - [🚀 Performance](#-performance)
@@ -113,10 +113,10 @@ Simply copy `include/slick/object_pool.h` to your project:
 
 ```bash
 # Clone the repository
-git clone https://github.com/SlickQuant/slick_object_pool.git
+git clone https://github.com/SlickQuant/slick-object-pool.git
 
 # Copy header to your project
-cp slick_object_pool/include/slick/object_pool.h your_project/include/
+cp slick-object-pool/include/slick/object-pool.h your_project/include/
 ```
 
 ### CMake Integration
@@ -128,28 +128,41 @@ include(FetchContent)
 
 set(BUILD_SLICK_OBJECTPOOL_TESTS OFF CACHE BOOL "" FORCE)
 FetchContent_Declare(
-    slick_object_pool
-    GIT_REPOSITORY https://github.com/SlickQuant/slick_object_pool.git
+    slick-object-pool
+    GIT_REPOSITORY https://github.com/SlickQuant/slick-object-pool.git
     GIT_TAG        main  # or specific version tag
 )
 
-FetchContent_MakeAvailable(slick_object_pool)
+FetchContent_MakeAvailable(slick-object-pool)
 
-target_link_libraries(your_target PRIVATE slick_object_pool)
+target_link_libraries(your_target PRIVATE slick-object-pool)
 ```
 
 **Option 2: Add as Subdirectory**
 
 ```cmake
-add_subdirectory(external/slick_object_pool)
-target_link_libraries(your_target PRIVATE slick_object_pool)
+add_subdirectory(external/slick-object-pool)
+target_link_libraries(your_target PRIVATE slick-object-pool)
 ```
 
-**Option 3: find_package (if installed)**
+**Option 3: vcpkg**
+
+```bash
+# Install via vcpkg
+vcpkg install slick-object-pool
+```
+
+Then in your CMakeLists.txt:
+```cmake
+find_package(slick-object-pool CONFIG REQUIRED)
+target_link_libraries(your_target PRIVATE slick::object-pool)
+```
+
+**Option 4: find_package (if manually installed)**
 
 ```cmake
-find_package(slick_object_pool REQUIRED)
-target_link_libraries(your_target PRIVATE slick_object_pool)
+find_package(slick-object-pool REQUIRED)
+target_link_libraries(your_target PRIVATE slick::object-pool)
 ```
 
 ## Usage Examples
@@ -291,7 +304,7 @@ Tested on: Intel Xeon E5-2680 v4 @ 2.4GHz, 256GB RAM, Linux 5.15
 
 | Implementation | Allocation Latency | Thread Safety |
 |----------------|-------------------|---------------|
-| slick_object_pool | ~12-35 ns | Lock-free |
+| slick-object-pool | ~12-35 ns | Lock-free |
 | std::allocator | ~50-200 ns | Thread-local |
 | boost::pool | ~20-40 ns | Mutex-based |
 | tcmalloc | ~30-60 ns | Thread-local |
@@ -375,7 +388,7 @@ static_assert(std::is_default_constructible_v<T>);
 Link with `rt` and `atomic` libraries:
 
 ```cmake
-target_link_libraries(your_target PRIVATE slick_object_pool rt atomic)
+target_link_libraries(your_target PRIVATE slick::object-pool rt atomic)
 ```
 
 Or with command line:
@@ -596,7 +609,7 @@ SOFTWARE.
 
 - [slick_queue](https://github.com/SlickQuant/slick_queue) - Lock-free MPMC queue
 
-**Note:** `slick_object_pool` is a standalone, zero-dependency library. No external dependencies required!
+**Note:** `slick-object-pool` is a standalone, zero-dependency library. No external dependencies required!
 
 ---
 

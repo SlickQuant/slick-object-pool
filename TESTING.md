@@ -1,4 +1,4 @@
-# Testing Guide - slick_object_pool
+# Testing Guide - slick-object-pool
 
 ## Overview
 

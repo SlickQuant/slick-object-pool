@@ -1,7 +1,5 @@
 find_package(GTest QUIET)
 
-enable_testing()
-
 if(NOT GTest_FOUND)
     include(FetchContent)
     FetchContent_Declare(
@@ -29,9 +27,9 @@ if(MSVC)
     )
 endif()
 
-# Link with slick_object_pool library
+# Link with slick-object-pool library
 target_link_libraries(slick_object_pool_tests PRIVATE
-    slick_object_pool
+    slick::object-pool
     GTest::gtest
     GTest::gtest_main
 )

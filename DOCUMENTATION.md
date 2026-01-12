@@ -1,4 +1,4 @@
-# slick_object_pool - Documentation Guide
+# slick-object-pool - Documentation Guide
 
 ## Overview
 
@@ -150,13 +150,13 @@ All member variables are documented with inline comments (`///`):
 
 2. **Create Doxyfile:**
    ```bash
-   cd d:\repo\slick_object_pool
+   cd d:\repo\slick-object-pool
    doxygen -g
    ```
 
 3. **Configure Doxyfile:**
    ```
-   PROJECT_NAME           = "slick_object_pool"
+   PROJECT_NAME           = "slick-object-pool"
    PROJECT_BRIEF          = "Lock-free object pool for C++20"
    PROJECT_VERSION        = "0.1.0"
    OUTPUT_DIRECTORY       = docs
