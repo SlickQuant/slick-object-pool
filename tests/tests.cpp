@@ -158,7 +158,7 @@ TEST_F(ObjectPoolTest, LargeObjectHandling) {
     for (int i = 0; i < 128; ++i) {
         obj->values[i] = i * 1.5;
     }
-    std::strcpy(obj->data, "Test large struct");
+    strcpy(obj->data, "Test large struct");
 
     EXPECT_EQ(obj->timestamp, 1234567890);
     EXPECT_DOUBLE_EQ(obj->values[0], 0.0);
