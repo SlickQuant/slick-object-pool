@@ -22,7 +22,7 @@ jobs:
       - name: Extract changelog for this version
         id: changelog
         run: |
-          if [ -f CHANGELOG.md ]; then
+          if [ -f CHANGELOG ]; then
             # Extract the section for this version from CHANGELOG
             VERSION="${{ github.ref_name }}"
             # Escape dots in version for regex
