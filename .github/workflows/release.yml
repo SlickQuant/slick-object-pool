@@ -24,7 +24,7 @@ jobs:
         run: |
           if [ -f CHANGELOG ]; then
             # Extract the section for this version from CHANGELOG
-            VERSION="${{ github.ref_name }}"
+            VERSION="${{ steps.get_version.outputs.VERSION }}"
             # Escape dots in version for regex
             VERSION_ESCAPED=$(echo "$VERSION" | sed 's/\./\\./g')
             # Use awk to extract content: start at version header, stop at next ## header
